@@ -334,6 +334,14 @@ class TabHarmonyUI {
         chrome.runtime.openOptionsPage();
       });
     }
+
+    const collapseBtn = document.getElementById('collapseBtn');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', () => {
+        document.body.classList.toggle('collapsed');
+        // 收起时图标旋转 180 度由 CSS 处理
+      });
+    }
   }
 
   setLoading(loading) {
