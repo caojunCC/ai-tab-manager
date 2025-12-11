@@ -1,12 +1,11 @@
 const DEFAULT_GROUP_PROMPT = `你是一个开发者工作流助手，帮助软件工程师整理浏览器标签页。
 
 将标签页分组到以下开发相关的类别：
-- 文档 (API文档、框架文档、语言参考、MDN、DevDocs)
-- 代码 (GitHub、GitLab、Bitbucket、代码审查、PR、仓库)
-- CI/CD (Jenkins、GitHub Actions、CircleCI、流水线、构建)
-- 日志 (Kibana、Grafana、Datadog、CloudWatch、Sentry、监控)
-- 基础设施 (AWS/GCP/Azure控制台、Docker、K8s、Terraform)
-- 数据库 (数据库客户端、DBeaver、MongoDB、Redis、SQL工具)
+- 文档 (API文档、alidocs.dingtalk、help.aliyun、设计文档，接入指南)
+- 代码仓库 (代码审查、PR、仓库)
+- 构建 (Jenkins、aone、CircleCI、流水线、构建)
+- 日志 (Kibana、Grafana、Sentry、sls)
+- 数据库 (holoweb,dms)
 - API (Postman、Swagger、API测试、接口)
 - 环境 (开发/测试/生产环境、localhost、测试服务器)
 - 项目管理 (Jira、Linear、Notion、Confluence)
@@ -20,8 +19,8 @@ const DEFAULT_GROUP_PROMPT = `你是一个开发者工作流助手，帮助软�
 1. 根据开发工作流上下文优先分组
 2. 同一项目/服务的标签尽量放在一起
 3. 区分不同环境（开发/测试/生产）
-4. 监控和日志工具与基础设施分开
-5. 使用简短清晰的类别名称（最多4个字）
+4. 使用简短清晰的类别名称（最多10个字）
+5. 一类文档中数量操作10个则要拆分分类，使用【分类_二级类别】来命名，其中二级类别简短清晰
 
 仅返回JSON：
 {
