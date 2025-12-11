@@ -90,6 +90,7 @@ class OptionsUI {
     this.searchPromptInput = document.getElementById('searchPrompt');
     this.resetGroupPromptBtn = document.getElementById('resetGroupPrompt');
     this.resetSearchPromptBtn = document.getElementById('resetSearchPrompt');
+    this.defaultOpenModeSelect = document.getElementById('defaultOpenMode');
     this.testButton = document.getElementById('testButton');
     this.testResult = document.getElementById('testResult');
     this.saveButton = document.getElementById('saveButton');
@@ -151,6 +152,7 @@ class OptionsUI {
     this.maxTokensInput.value = config.maxTokens;
     this.groupPromptInput.value = config.groupPrompt || DEFAULT_GROUP_PROMPT;
     this.searchPromptInput.value = config.searchPrompt || DEFAULT_SEARCH_PROMPT;
+    this.defaultOpenModeSelect.value = config.defaultOpenMode || 'popup';
 
     // Set model
     const modelExists = Array.from(this.modelSelect.options).some(opt => opt.value === config.model);
@@ -242,7 +244,8 @@ class OptionsUI {
       temperature: parseFloat(this.temperatureInput.value),
       maxTokens: parseInt(this.maxTokensInput.value),
       groupPrompt: this.groupPromptInput.value.trim() || DEFAULT_GROUP_PROMPT,
-      searchPrompt: this.searchPromptInput.value.trim() || DEFAULT_SEARCH_PROMPT
+      searchPrompt: this.searchPromptInput.value.trim() || DEFAULT_SEARCH_PROMPT,
+      defaultOpenMode: this.defaultOpenModeSelect.value
     };
   }
 

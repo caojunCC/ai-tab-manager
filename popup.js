@@ -12,7 +12,32 @@ class TabHarmonyUI {
     this.semanticSearchEnabled = false;
 
     this.setupEventListeners();
+    this.setupTabListeners();
     this.loadExistingGroups();
+  }
+
+  setupTabListeners() {
+    // 防抖：避免频繁刷新
+    let debounceTimer;
+    const debouncedRefresh = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => this.loadExistingGroups(), 100);
+    };
+
+    // 监听标签变化
+    chrome.tabs.onRemoved.addListener(debouncedRefresh);
+    chrome.tabs.onCreated.addListener(debouncedRefresh);
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+      if (changeInfo.status === 'complete' || changeInfo.title) {
+        debouncedRefresh();
+      }
+    });
+    chrome.tabs.onMoved.addListener(debouncedRefresh);
+
+    // 监听分组变化
+    chrome.tabGroups.onCreated.addListener(debouncedRefresh);
+    chrome.tabGroups.onRemoved.addListener(debouncedRefresh);
+    chrome.tabGroups.onUpdated.addListener(debouncedRefresh);
   }
 
   async loadExistingGroups() {
@@ -72,11 +97,14 @@ class TabHarmonyUI {
     section.className = 'section';
     section.innerHTML = `
       <div class="section-header">
+        <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
         <div class="section-title">
           <svg class="icon pin" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
           </svg>
-          已固定
+          已固定 (${tabs.length})
         </div>
         <div class="section-actions">
           <button class="section-btn danger" id="clearPinned">全部关闭</button>
@@ -88,6 +116,11 @@ class TabHarmonyUI {
     const tabList = section.querySelector('.tab-list');
     tabs.forEach(tab => {
       tabList.appendChild(this.createTabItem(tab));
+    });
+
+    section.querySelector('.section-header').addEventListener('click', (e) => {
+      if (e.target.closest('.section-btn')) return;
+      section.classList.toggle('collapsed');
     });
 
     section.querySelector('#clearPinned').addEventListener('click', async () => {
@@ -105,6 +138,9 @@ class TabHarmonyUI {
     const header = document.createElement('div');
     header.className = 'section-header';
     header.innerHTML = `
+      <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
       <div class="section-title">
         <span class="tab-group-color" style="background: ${this.getColorHex(color)}"></span>
         ${title} (${tabs.length})
@@ -118,6 +154,11 @@ class TabHarmonyUI {
     tabList.className = 'tab-list';
     tabs.forEach(tab => {
       tabList.appendChild(this.createTabItem(tab));
+    });
+
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('.section-btn')) return;
+      section.classList.toggle('collapsed');
     });
 
     header.querySelector('.ungroup-btn').addEventListener('click', async () => {
@@ -135,11 +176,14 @@ class TabHarmonyUI {
     section.className = 'section';
     section.innerHTML = `
       <div class="section-header">
+        <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
         <div class="section-title">
           <svg class="icon folder" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
           </svg>
-          未分组
+          未分组 (${tabs.length})
         </div>
         <div class="section-actions">
           <button class="section-btn" id="openNewWindow">
@@ -163,6 +207,11 @@ class TabHarmonyUI {
     const tabList = section.querySelector('.tab-list');
     tabs.forEach(tab => {
       tabList.appendChild(this.createTabItem(tab));
+    });
+
+    section.querySelector('.section-header').addEventListener('click', (e) => {
+      if (e.target.closest('.section-btn')) return;
+      section.classList.toggle('collapsed');
     });
 
     section.querySelector('#openNewWindow').addEventListener('click', async () => {
@@ -201,8 +250,18 @@ class TabHarmonyUI {
         <span class="tab-title">${tab.title}</span>
         <span class="tab-url">${domain}${lastAccessed ? ' · ' + lastAccessed : ''}</span>
       </div>
+      <button class="tab-close" title="关闭标签">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
     `;
-    item.addEventListener('click', () => chrome.tabs.update(tab.id, { active: true }));
+    item.querySelector('.tab-info').addEventListener('click', () => chrome.tabs.update(tab.id, { active: true }));
+    item.querySelector('.tab-close').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await chrome.tabs.remove(tab.id);
+      item.remove();
+    });
     return item;
   }
 
@@ -233,16 +292,32 @@ class TabHarmonyUI {
 
   setupEventListeners() {
     this.organizeButton.addEventListener('click', () => this.organizeTabs());
-    this.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
-    document.getElementById('ungroupAllButton').addEventListener('click', () => this.ungroupAllTabs());
-    this.aiSearchToggle.addEventListener('click', () => {
-      this.semanticSearchEnabled = !this.semanticSearchEnabled;
-      this.aiSearchToggle.classList.toggle('active', this.semanticSearchEnabled);
-      this.searchInput.placeholder = this.semanticSearchEnabled ? 'AI 语义搜索...' : '搜索标签页...';
-      if (this.searchInput.value.trim()) {
+    // input 事件：本地搜索实时触发，AI搜索只检查清空
+    this.searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      if (!query.trim()) {
+        this.loadExistingGroups();
+      } else if (!this.semanticSearchEnabled) {
+        this.handleSearch(query);
+      }
+    });
+    // keydown 事件：AI搜索回车触发
+    this.searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && this.semanticSearchEnabled && this.searchInput.value.trim()) {
         this.handleSearch(this.searchInput.value);
       }
     });
+    document.getElementById('ungroupAllButton').addEventListener('click', () => this.ungroupAllTabs());
+    if (this.aiSearchToggle) {
+      this.aiSearchToggle.addEventListener('click', () => {
+        this.semanticSearchEnabled = !this.semanticSearchEnabled;
+        this.aiSearchToggle.classList.toggle('active', this.semanticSearchEnabled);
+        this.searchInput.placeholder = this.semanticSearchEnabled ? 'AI 搜索，回车确认...' : '搜索标签页...';
+        if (this.searchInput.value.trim() && !this.semanticSearchEnabled) {
+          this.handleSearch(this.searchInput.value);
+        }
+      });
+    }
 
     const sidePanelBtn = document.getElementById('sidePanelButton');
     if (sidePanelBtn) {
@@ -354,14 +429,24 @@ class TabHarmonyUI {
   }
 
   async createChromeTabGroups(groups) {
+    // 获取当前存在的标签 id
+    const existingTabs = await chrome.tabs.query({ currentWindow: true });
+    const existingIds = new Set(existingTabs.map(t => t.id));
+
     for (const [category, { tabs, color }] of Object.entries(groups)) {
       if (tabs.length === 0) continue;
-      const tabIds = tabs.map(tab => tab.id);
-      const groupId = await chrome.tabs.group({ tabIds });
-      await chrome.tabGroups.update(groupId, {
-        title: category,
-        color: this.normalizeColor(color)
-      });
+      // 过滤掉已不存在的标签
+      const tabIds = tabs.map(tab => tab.id).filter(id => existingIds.has(id));
+      if (tabIds.length === 0) continue;
+      try {
+        const groupId = await chrome.tabs.group({ tabIds });
+        await chrome.tabGroups.update(groupId, {
+          title: category,
+          color: this.normalizeColor(color)
+        });
+      } catch (e) {
+        console.warn(`Failed to create group "${category}":`, e);
+      }
     }
   }
 

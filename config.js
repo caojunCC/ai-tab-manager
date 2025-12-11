@@ -44,7 +44,8 @@ const DEFAULT_CONFIG = {
   temperature: 0.7,
   maxTokens: 2000,
   groupPrompt: DEFAULT_GROUP_PROMPT,
-  searchPrompt: DEFAULT_SEARCH_PROMPT
+  searchPrompt: DEFAULT_SEARCH_PROMPT,
+  defaultOpenMode: 'popup' // 'popup' | 'sidepanel'
 };
 
 export { DEFAULT_GROUP_PROMPT, DEFAULT_SEARCH_PROMPT };
