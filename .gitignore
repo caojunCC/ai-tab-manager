@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude/AI
+.claude/
+.gemini-clipboard/
+
+# Build artifacts
+*.zip
