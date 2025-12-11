@@ -391,12 +391,25 @@ main::-webkit-scrollbar-thumb {
   flex-shrink: 0;
 }
 
-.tab-title {
+.tab-info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tab-title {
   font-size: 13px;
   color: var(--text-primary);
   word-break: break-word;
   line-height: 1.4;
+}
+
+.tab-url {
+  font-size: 11px;
+  color: var(--text-secondary);
+  word-break: break-all;
 }
 
 /* Tab Grid */
