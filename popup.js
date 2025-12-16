@@ -7,7 +7,6 @@ class TabHarmonyUI {
     this.tabGroups = document.getElementById('tabGroups');
     this.tabCount = document.getElementById('tabCount');
     this.loadingSpinner = this.organizeButton.querySelector('.loading-spinner');
-    this.buttonText = this.organizeButton.querySelector('.button-text');
     this.aiSearchToggle = document.getElementById('aiSearchToggle');
     this.semanticSearchEnabled = false;
 
@@ -389,11 +388,9 @@ class TabHarmonyUI {
   setLoading(loading) {
     if (loading) {
       this.loadingSpinner.classList.remove('hidden');
-      this.buttonText.textContent = '分组中...';
       this.organizeButton.disabled = true;
     } else {
       this.loadingSpinner.classList.add('hidden');
-      this.buttonText.textContent = '智能分组';
       this.organizeButton.disabled = false;
     }
   }
