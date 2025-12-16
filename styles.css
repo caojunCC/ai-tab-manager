@@ -91,11 +91,19 @@ body.collapsed .collapse-btn {
 }
 
 .container {
-  padding: 16px;
+  padding: 10px 12px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row-reverse;
 }
 
 /* Search */
@@ -103,31 +111,34 @@ body.collapsed .collapse-btn {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
-  width: 18px;
-  height: 18px;
+  left: 10px;
+  width: 14px;
+  height: 14px;
   color: var(--text-secondary);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  padding: 12px 44px 12px 40px;
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 36px 8px 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
   background: var(--bg-card);
   color: var(--text-primary);
   outline: none;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s;
 }
 
 .search-input:focus {
-  box-shadow: 0 0 0 3px var(--accent-light);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 .search-input::placeholder {
@@ -136,14 +147,14 @@ body.collapsed .collapse-btn {
 
 .ai-toggle {
   position: absolute;
-  right: 8px;
+  right: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -161,41 +172,60 @@ body.collapsed .collapse-btn {
 }
 
 .ai-toggle svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
 }
 
 /* Action Buttons */
 .actions-container {
   display: flex;
-  gap: 12px;
+  gap: 2px;
 }
 
 .action-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 4px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .action-btn:hover {
-  background: var(--bg-primary);
+  background: var(--accent-light);
   border-color: var(--accent);
+  color: var(--accent);
 }
 
 .action-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+}
+
+.action-btn.icon-only {
+  padding: 6px;
+  border: none;
+  background: transparent;
+}
+
+.action-btn.icon-only:hover {
+  background: var(--accent-light);
+}
+
+#toggleCollapseButton .collapse-icon {
+  transition: transform 0.2s;
+}
+
+#toggleCollapseButton.collapsed .collapse-icon {
+  transform: rotate(180deg);
 }
 
 .action-btn .loading-spinner {
@@ -216,7 +246,7 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   overflow-y: auto;
 }
 
@@ -237,15 +267,16 @@ main::-webkit-scrollbar-thumb {
 .section {
   background: var(--bg-card);
   border-radius: 12px;
-  padding: 12px 12px 12px 0;
-  box-shadow: 0 2px 8px var(--shadow);
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   cursor: pointer;
 }
 
@@ -297,22 +328,24 @@ main::-webkit-scrollbar-thumb {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border: none;
   border-radius: 6px;
-  background: var(--bg-card);
-  font-size: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .section-btn:hover {
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
 }
 
 .section-btn.danger {
   color: var(--danger);
-  border-color: transparent;
   background: transparent;
 }
 
@@ -325,30 +358,37 @@ main::-webkit-scrollbar-thumb {
   height: 14px;
 }
 
+.section-btn.icon-only {
+  padding: 5px;
+  background: transparent;
+}
+
+.section-btn.icon-only:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 /* Tab List */
 .tab-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
 .tab-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background: var(--accent-light);
+  padding: 8px 10px;
+  background: transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-item .tab-favicon {
-  margin-top: 2px;
+  transition: all 0.15s;
+  border: 1px solid transparent;
 }
 
 .tab-item:hover {
-  background: #cce0ff;
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.1);
 }
 
 .tab-close {
@@ -385,31 +425,36 @@ main::-webkit-scrollbar-thumb {
 }
 
 .tab-favicon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .tab-info {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  overflow: hidden;
 }
 
 .tab-title {
   font-size: 13px;
+  font-weight: 500;
   color: var(--text-primary);
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1.4;
 }
 
 .tab-url {
   font-size: 11px;
   color: var(--text-secondary);
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
 }
 
 /* Tab Grid */
@@ -429,22 +474,29 @@ main::-webkit-scrollbar-thumb {
 
 /* Tab Group */
 .tab-group {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .tab-group-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
+  padding: 6px 8px;
   cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.tab-group-header:hover {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .tab-group-header .expand-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--text-secondary);
   transition: transform 0.2s;
+  opacity: 0.6;
 }
 
 .tab-group-header.collapsed .expand-icon {
@@ -454,20 +506,26 @@ main::-webkit-scrollbar-thumb {
 .tab-group-title {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .tab-group-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .tab-group-count {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
 }
 
 .tab-group-content {

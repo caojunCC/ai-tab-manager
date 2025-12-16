@@ -21,7 +21,7 @@ class TabHarmonyUI {
     let debounceTimer;
     const debouncedRefresh = () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => this.loadExistingGroups(), 100);
+      debounceTimer = setTimeout(() => this.refreshCurrentView(), 100);
     };
 
     // 监听标签变化
@@ -38,6 +38,16 @@ class TabHarmonyUI {
     chrome.tabGroups.onCreated.addListener(debouncedRefresh);
     chrome.tabGroups.onRemoved.addListener(debouncedRefresh);
     chrome.tabGroups.onUpdated.addListener(debouncedRefresh);
+  }
+
+  // 刷新当前视图：如果有搜索词则刷新搜索结果，否则刷新分组列表
+  refreshCurrentView() {
+    const query = this.searchInput?.value?.trim();
+    if (query) {
+      this.handleSearch(query);
+    } else {
+      this.loadExistingGroups();
+    }
   }
 
   async loadExistingGroups() {
@@ -107,7 +117,11 @@ class TabHarmonyUI {
           已固定 (${tabs.length})
         </div>
         <div class="section-actions">
-          <button class="section-btn danger" id="clearPinned">全部关闭</button>
+          <button class="section-btn danger icon-only" id="clearPinned" title="全部关闭">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+            </svg>
+          </button>
         </div>
       </div>
       <div class="tab-list"></div>
@@ -146,7 +160,23 @@ class TabHarmonyUI {
         ${title} (${tabs.length})
       </div>
       <div class="section-actions">
-        <button class="section-btn ungroup-btn">取消分组</button>
+        <button class="section-btn icon-only open-window-btn" title="新窗口打开">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 3v18"/>
+          </svg>
+        </button>
+        <button class="section-btn danger icon-only close-all-btn" title="全部关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+          </svg>
+        </button>
+        <button class="section-btn ungroup-btn icon-only" title="取消分组">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 14 4 9l5-5"/>
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>
+          </svg>
+        </button>
       </div>
     `;
 
@@ -163,6 +193,19 @@ class TabHarmonyUI {
 
     header.querySelector('.ungroup-btn').addEventListener('click', async () => {
       await chrome.tabs.ungroup(tabs.map(t => t.id));
+      this.loadExistingGroups();
+    });
+
+    header.querySelector('.open-window-btn').addEventListener('click', async () => {
+      const tabIds = tabs.map(t => t.id);
+      const newWindow = await chrome.windows.create({ tabId: tabIds[0] });
+      if (tabIds.length > 1) {
+        await chrome.tabs.move(tabIds.slice(1), { windowId: newWindow.id, index: -1 });
+      }
+    });
+
+    header.querySelector('.close-all-btn').addEventListener('click', async () => {
+      await chrome.tabs.remove(tabs.map(t => t.id));
       this.loadExistingGroups();
     });
 
@@ -186,18 +229,16 @@ class TabHarmonyUI {
           未分组 (${tabs.length})
         </div>
         <div class="section-actions">
-          <button class="section-btn" id="openNewWindow">
+          <button class="section-btn icon-only" id="openNewWindow" title="新窗口打开">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2"/>
               <path d="M9 3v18"/>
             </svg>
-            新窗口打开
           </button>
-          <button class="section-btn danger" id="closeUngrouped">
+          <button class="section-btn danger icon-only" id="closeUngrouped" title="全部关闭">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
             </svg>
-            全部关闭
           </button>
         </div>
       </div>
@@ -308,6 +349,7 @@ class TabHarmonyUI {
       }
     });
     document.getElementById('ungroupAllButton').addEventListener('click', () => this.ungroupAllTabs());
+    document.getElementById('toggleCollapseButton').addEventListener('click', () => this.toggleAllCollapse());
     if (this.aiSearchToggle) {
       this.aiSearchToggle.addEventListener('click', () => {
         this.semanticSearchEnabled = !this.semanticSearchEnabled;
@@ -537,6 +579,22 @@ class TabHarmonyUI {
     });
 
     this.tabGroups.appendChild(section);
+  }
+
+  toggleAllCollapse() {
+    const sections = document.querySelectorAll('.section');
+    const allCollapsed = Array.from(sections).every(s => s.classList.contains('collapsed'));
+    const btn = document.getElementById('toggleCollapseButton');
+
+    sections.forEach(section => {
+      if (allCollapsed) {
+        section.classList.remove('collapsed');
+      } else {
+        section.classList.add('collapsed');
+      }
+    });
+
+    btn.classList.toggle('collapsed', !allCollapsed);
   }
 
   async ungroupAllTabs() {

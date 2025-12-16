@@ -8,40 +8,44 @@
 </head>
 <body>
   <div class="container">
-    <!-- Search -->
-    <div class="search-container">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="M21 21l-4.35-4.35"/>
-      </svg>
-      <input type="text" id="searchInput" placeholder="搜索标签页..." class="search-input">
-      <button id="aiSearchToggle" class="ai-toggle" title="AI 语义搜索">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
-          <path d="M18 14v1a6 6 0 0 1-12 0v-1"/>
-          <path d="M12 19v3"/>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-container">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
         </svg>
-      </button>
-    </div>
-
-    <!-- Actions -->
-    <div class="actions-container">
-      <button id="organizeButton" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m15 4-1 1 4 4 1-1a2.83 2.83 0 1 0-4-4Z"/>
-          <path d="m13 6-8.5 8.5a2.12 2.12 0 1 0 3 3L16 9"/>
-          <path d="m2 22 5.5-1.5L9 19"/>
-        </svg>
-        <span class="button-text">智能分组</span>
-        <div class="loading-spinner hidden"></div>
-      </button>
-      <button id="ungroupAllButton" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 14 4 9l5-5"/>
-          <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>
-        </svg>
-        <span>取消分组</span>
-      </button>
+        <input type="text" id="searchInput" placeholder="搜索标签页..." class="search-input">
+        <button id="aiSearchToggle" class="ai-toggle" title="AI 语义搜索">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+            <path d="M18 14v1a6 6 0 0 1-12 0v-1"/>
+            <path d="M12 19v3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="actions-container">
+        <button id="toggleCollapseButton" class="action-btn icon-only" title="折叠/展开全部">
+          <svg class="collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 8l-5 5-5-5"/>
+            <path d="M17 13l-5 5-5-5"/>
+          </svg>
+        </button>
+        <button id="organizeButton" class="action-btn icon-only" title="智能分组">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 4-1 1 4 4 1-1a2.83 2.83 0 1 0-4-4Z"/>
+            <path d="m13 6-8.5 8.5a2.12 2.12 0 1 0 3 3L16 9"/>
+            <path d="m2 22 5.5-1.5L9 19"/>
+          </svg>
+          <div class="loading-spinner hidden"></div>
+        </button>
+        <button id="ungroupAllButton" class="action-btn icon-only" title="取消分组">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 14 4 9l5-5"/>
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Main Content -->
