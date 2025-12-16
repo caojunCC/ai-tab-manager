@@ -9,6 +9,7 @@ class TabHarmonyUI {
     this.loadingSpinner = this.organizeButton.querySelector('.loading-spinner');
     this.aiSearchToggle = document.getElementById('aiSearchToggle');
     this.semanticSearchEnabled = false;
+    this.isOrganizing = false; // 防止重复触发自动分组
 
     this.setupEventListeners();
     this.setupTabListeners();
@@ -18,17 +19,28 @@ class TabHarmonyUI {
   setupTabListeners() {
     // 防抖：避免频繁刷新
     let debounceTimer;
+    let autoGroupTimer;
     const debouncedRefresh = () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => this.refreshCurrentView(), 100);
     };
+    const debouncedAutoGroup = () => {
+      clearTimeout(autoGroupTimer);
+      autoGroupTimer = setTimeout(() => this.tryAutoGroup(), 2000); // 2秒后检查
+    };
 
     // 监听标签变化
     chrome.tabs.onRemoved.addListener(debouncedRefresh);
-    chrome.tabs.onCreated.addListener(debouncedRefresh);
+    chrome.tabs.onCreated.addListener(() => {
+      debouncedRefresh();
+      debouncedAutoGroup();
+    });
     chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
       if (changeInfo.status === 'complete' || changeInfo.title) {
         debouncedRefresh();
+        if (changeInfo.status === 'complete') {
+          debouncedAutoGroup();
+        }
       }
     });
     chrome.tabs.onMoved.addListener(debouncedRefresh);
@@ -37,6 +49,17 @@ class TabHarmonyUI {
     chrome.tabGroups.onCreated.addListener(debouncedRefresh);
     chrome.tabGroups.onRemoved.addListener(debouncedRefresh);
     chrome.tabGroups.onUpdated.addListener(debouncedRefresh);
+  }
+
+  async tryAutoGroup() {
+    if (this.isOrganizing) return;
+
+    const allTabs = await chrome.tabs.query({ currentWindow: true });
+    const ungroupedTabs = allTabs.filter(tab => !tab.pinned && tab.groupId === -1);
+
+    if (ungroupedTabs.length > 3) {
+      this.organizeTabs();
+    }
   }
 
   // 刷新当前视图：如果有搜索词则刷新搜索结果，否则刷新分组列表
@@ -396,12 +419,14 @@ class TabHarmonyUI {
   }
 
   async organizeTabs() {
+    if (this.isOrganizing) return;
+    this.isOrganizing = true;
+
     try {
       this.setLoading(true);
       const allTabs = await chrome.tabs.query({ currentWindow: true });
       const tabs = allTabs.filter(tab => !tab.pinned && tab.groupId === -1);
       if (tabs.length === 0) {
-        alert('没有需要分组的标签页');
         return;
       }
       const groupedTabs = await this.analyzeAndGroupTabs(tabs);
@@ -409,8 +434,8 @@ class TabHarmonyUI {
       await this.loadExistingGroups();
     } catch (error) {
       console.error('Grouping error:', error);
-      alert(`错误: ${error.message}`);
     } finally {
+      this.isOrganizing = false;
       this.setLoading(false);
     }
   }
@@ -476,21 +501,31 @@ class TabHarmonyUI {
   }
 
   async createChromeTabGroups(groups) {
-    // 获取当前存在的标签 id
-    const existingTabs = await chrome.tabs.query({ currentWindow: true });
+    const currentWindow = await chrome.windows.getCurrent();
+    const existingTabs = await chrome.tabs.query({ windowId: currentWindow.id });
     const existingIds = new Set(existingTabs.map(t => t.id));
+
+    // 获取已存在的分组，用于复用同名分组
+    const existingGroups = await chrome.tabGroups.query({ windowId: currentWindow.id });
+    const groupByName = new Map(existingGroups.map(g => [g.title, g.id]));
 
     for (const [category, { tabs, color }] of Object.entries(groups)) {
       if (tabs.length === 0) continue;
-      // 过滤掉已不存在的标签
       const tabIds = tabs.map(tab => tab.id).filter(id => existingIds.has(id));
       if (tabIds.length === 0) continue;
       try {
-        const groupId = await chrome.tabs.group({ tabIds });
-        await chrome.tabGroups.update(groupId, {
-          title: category,
-          color: this.normalizeColor(color)
-        });
+        const existingGroupId = groupByName.get(category);
+        if (existingGroupId !== undefined) {
+          // 复用已存在的同名分组
+          await chrome.tabs.group({ tabIds, groupId: existingGroupId });
+        } else {
+          const groupId = await chrome.tabs.group({ tabIds });
+          await chrome.tabGroups.update(groupId, {
+            title: category,
+            color: this.normalizeColor(color)
+          });
+          groupByName.set(category, groupId);
+        }
       } catch (e) {
         console.warn(`Failed to create group "${category}":`, e);
       }
