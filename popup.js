@@ -14,6 +14,7 @@ class TabHarmonyUI {
     this.setupEventListeners();
     this.setupTabListeners();
     this.loadExistingGroups();
+    this.tryAutoGroup();
   }
 
   setupTabListeners() {
