@@ -373,6 +373,7 @@ class TabHarmonyUI {
     });
     document.getElementById('ungroupAllButton').addEventListener('click', () => this.ungroupAllTabs());
     document.getElementById('toggleCollapseButton').addEventListener('click', () => this.toggleAllCollapse());
+    document.getElementById('newTabButton').addEventListener('click', () => chrome.tabs.create({}));
     if (this.aiSearchToggle) {
       this.aiSearchToggle.addEventListener('click', () => {
         this.semanticSearchEnabled = !this.semanticSearchEnabled;
